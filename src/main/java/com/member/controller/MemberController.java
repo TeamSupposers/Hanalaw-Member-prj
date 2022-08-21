@@ -1,4 +1,4 @@
-package com.member.member.controller;
+package com.member.controller;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
