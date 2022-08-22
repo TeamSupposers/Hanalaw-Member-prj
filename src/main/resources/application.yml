@@ -1,13 +1,29 @@
 server:
   port: 8081
 
+springbootwebfluxjjwt:
+  jjwt:
+    secret: ThisIsSecretForJWTHS512SignatureAlgorithmThatMUSTHave64ByteLength
+    expiration: 28800
+  password:
+    encoder:
+      secret: mysecret
+      iteration: 33
+      keylength: 256
+
 spring:
+  profiles:
+    active: local
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
   security:
     oauth2:
       client:
         registration:
-          kakao:
-            client-secret: ENC(uE4DHfcXtmg/dz9uGueQ/afcj065S2rPcpug1f2rBfdw8VyfNczSaGR/rVsNv5OA)
+          #kakao:
+          #  client-secret: ENC(uE4DHfcXtmg/dz9uGueQ/afcj065S2rPcpug1f2rBfdw8VyfNczSaGR/rVsNv5OA)
           google:
             client-id: ENC(rSK4nQrWzg35461UuWFRPO0WF/g45LPIu8Ls8cwNE+7i2PR7Kg3TV4Sn/TuUWoDRLpwUyJJqzfbXxVCdOAkQm+GJoJvNR/WKWanr2DfRKAzjdROpN6eeDQ==)
             client-secret: ENC(4sY1a5YjTVvJyJf7HSzNUEAn+dQlx1zomqOUcq+gRhgk/dGQz/Seys7pC60YwPHW)
