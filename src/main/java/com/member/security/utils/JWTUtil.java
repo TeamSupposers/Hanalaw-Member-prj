@@ -10,7 +10,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.member.entity.User;
+import com.member.entity.Member;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -49,10 +49,10 @@ public class JWTUtil {
         return expiration.before(new Date());
     }
 
-    public String generateToken(User user) {
+    public String generateToken(Member member) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", user.getRoles());
-        return doGenerateToken(claims, user.getUsername());
+        claims.put("role", member.getRoles());
+        return doGenerateToken(claims, member.getUsername());
     }
 
     private String doGenerateToken(Map<String, Object> claims, String username) {

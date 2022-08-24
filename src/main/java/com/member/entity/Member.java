@@ -25,16 +25,20 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Table("TB_HANA_MBR")
-public class User implements UserDetails {
+public class Member implements UserDetails {
 
     private static final long serialVersionUID = 1L;
     
     @Id
-    @Column("USERNAME")
-    private String username;
+    @Column("MBR_ID")
+    private Long id;
+    
+    @Column("MBR_NAME")
+    private String memberName;
 
-    @Column("PASSWORD")
+    @Column("MBR_PASSWORD")
     private String password;
 
     @Getter
@@ -42,17 +46,23 @@ public class User implements UserDetails {
     @Column("ENABLED")
     private Boolean enabled;
 
+    public Member(String memberName, String password) {
+    	this.memberName = memberName;
+    	this.password = password;
+    	this.enabled = true;
+    }
+    
     @Transient
     @Getter @Setter
     private List<Role> roles;
 
     @Override
     public String getUsername() {
-        return username;
+        return memberName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsername(String memberName) {
+        this.memberName = memberName;
     }
 
     @Override

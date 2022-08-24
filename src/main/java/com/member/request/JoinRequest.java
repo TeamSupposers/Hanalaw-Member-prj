@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class  AuthRequest {
+public class  JoinRequest {
     private String memberName;
     private String password;
 }

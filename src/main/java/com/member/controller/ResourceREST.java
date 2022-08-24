@@ -5,7 +5,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.member.Message;
+import com.member.entity.Message;
 
 import reactor.core.publisher.Mono;
 

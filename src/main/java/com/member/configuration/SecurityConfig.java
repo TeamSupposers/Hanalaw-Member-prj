@@ -1,9 +1,5 @@
 package com.member.configuration;
 
-import java.util.Arrays;
-
-import javax.annotation.PostConstruct;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -12,9 +8,6 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
-import com.member.consts.Role;
-import com.member.entity.User;
-import com.member.repository.UserRepository;
 import com.member.security.AuthenticationManager;
 import com.member.security.repository.SecurityContextRepository;
 
@@ -47,6 +40,7 @@ public class SecurityConfig {
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers("/login").permitAll()
+                .pathMatchers("/member/join").permitAll()
                 .pathMatchers("/h2-console").permitAll()
                 .anyExchange().authenticated()
                 .and().build();

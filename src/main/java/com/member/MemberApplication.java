@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
 import com.member.consts.Role;
-import com.member.entity.User;
-import com.member.repository.UserRepository;
+import com.member.entity.Member;
+import com.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,11 +23,11 @@ public class MemberApplication {
 		SpringApplication.run(MemberApplication.class, args);
 	}
 
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     
 	@PostConstruct
     public void init() {
-    	userRepository.save(new User("user", "cBrlgyL2GI2GINuLUUwgojITuIufFycpLG4490dhGtY=", true, Arrays.asList(Role.ROLE_USER)));
-    	userRepository.save(new User("admin", "dQNjUIMorJb8Ubj2+wVGYp6eAeYkdekqAcnYp+aRq5w=", true, Arrays.asList(Role.ROLE_ADMIN)));
+		memberRepository.save(new Member(1L, "user", "cBrlgyL2GI2GINuLUUwgojITuIufFycpLG4490dhGtY=", true, Arrays.asList(Role.ROLE_USER)));
+		memberRepository.save(new Member(2L, "admin", "dQNjUIMorJb8Ubj2+wVGYp6eAeYkdekqAcnYp+aRq5w=", true, Arrays.asList(Role.ROLE_ADMIN)));
     }
 }
