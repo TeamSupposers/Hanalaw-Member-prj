@@ -27,7 +27,7 @@ public class MemberService {
 
 	private final AuthorityRepository authorityRepository;
 
-	public Mono<Member> save(JoinRequest joinRequest) {
+	public Mono<Member> join(JoinRequest joinRequest) {
 		return isDuplicated(joinRequest.getUserId()).flatMap(isDup -> {
 			if (isDup) {
 				throw new DuplicateKeyException("중복된 키 입니다.");

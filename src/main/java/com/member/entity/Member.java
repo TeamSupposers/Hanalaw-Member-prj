@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.member.consts.Interst;
+import com.member.consts.Interest;
 import com.member.consts.Role;
 
 import lombok.AllArgsConstructor;
@@ -59,7 +59,7 @@ public class Member implements UserDetails {
     @Setter
     @Transient
     @JsonIgnore
-    private List<Interst> interests;
+    private List<Interest> interests;
     
     @Setter
     @Column("ENABLED")
