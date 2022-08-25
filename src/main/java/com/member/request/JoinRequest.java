@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class  JoinRequest {
-    private String memberName;
-    private String password;
+	private String userId;
+    private String userName;
+    private String userPassword;
+    private String phoneNumber;
+    private String nickName;
+    private String ageRange;
 }

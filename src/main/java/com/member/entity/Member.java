@@ -14,9 +14,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.member.consts.Interst;
 import com.member.consts.Role;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,43 +28,62 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Builder
 @Table("TB_HANA_MBR")
 public class Member implements UserDetails {
 
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @Column("MBR_ID")
-    private Long id;
+    private Long memberId;
     
-    @Column("MBR_NAME")
-    private String memberName;
+    @Column("USER_ID")
+    private String userId;
+    
+    @Column("USER_NAME")
+    private String userName;
 
-    @Column("MBR_PASSWORD")
-    private String password;
+    @Column("USER_PASSWORD")
+    private String userPassword;
 
-    @Getter
+    @Column("PHONENUMBER")
+    private String phoneNumber;
+    
+    @Column("NICKNAME")
+    private String nickName;
+    
+    @Column("AGE_RANGE")
+    private String ageRange;
+    
+    @Setter
+    @Transient
+    @JsonIgnore
+    private List<Interst> interests;
+    
     @Setter
     @Column("ENABLED")
     private Boolean enabled;
-
-    public Member(String memberName, String password) {
-    	this.memberName = memberName;
-    	this.password = password;
+    
+    public Member(String userId, String userName, String userPassword) {
+    	this.userId = userId;
+    	this.userName = userName;
+    	this.userPassword = userPassword;
     	this.enabled = true;
     }
     
+    @Setter
     @Transient
-    @Getter @Setter
+    @JsonIgnore
     private List<Role> roles;
 
     @Override
     public String getUsername() {
-        return memberName;
+        return userId;
     }
 
-    public void setUsername(String memberName) {
-        this.memberName = memberName;
+    public void setUsername(String userId) {
+        this.userId = userId;
     }
 
     @Override
@@ -93,12 +114,12 @@ public class Member implements UserDetails {
     @JsonIgnore
     @Override
     public String getPassword() {
-        return password;
+        return userPassword;
     }
 
     @JsonProperty
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPassword(String userPassword) {
+        this.userPassword = userPassword;
     }
 
 }

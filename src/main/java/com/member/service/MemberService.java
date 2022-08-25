@@ -1,5 +1,8 @@
 package com.member.service;
 
+import java.util.Arrays;
+
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import com.member.consts.Role;
@@ -25,14 +28,27 @@ public class MemberService {
 	private final AuthorityRepository authorityRepository;
 
 	public Mono<Member> save(JoinRequest joinRequest) {
-		return memberRepository
-				.save(new Member(joinRequest.getMemberName(), passwordEncoder.encode(joinRequest.getPassword())))
-				.doOnSuccess(s -> {
-					authorityRepository.save(new Authority(s.getId(), Role.ROLE_USER));
-				});
+		return isDuplicated(joinRequest.getUserId()).flatMap(isDup -> {
+			if (isDup) {
+				throw new DuplicateKeyException("중복된 키 입니다.");
+			}
+			return memberRepository
+					.save(Member.builder().userId(joinRequest.getUserId()).userName(joinRequest.getUserName())
+							.userPassword(passwordEncoder.encode(joinRequest.getUserPassword()))
+							.phoneNumber(joinRequest.getPhoneNumber()).nickName(joinRequest.getNickName())
+							.ageRange(joinRequest.getAgeRange()).enabled(true).build())
+					.flatMap(member -> authorityRepository.save(new Authority(member.getMemberId(), Role.ROLE_USER)).thenReturn(member));
+		});
 	}
 
 	public Mono<Member> login(AuthRequest authRequest) {
-		return memberRepository.findByMemberName(authRequest.getMemberName()).filter(m -> passwordEncoder.encode(authRequest.getPassword()).equals(m.getPassword()));
+		return memberRepository.findByUserId(authRequest.getUserId())
+				.flatMap(member -> authorityRepository.findById(member.getMemberId())
+						.doOnNext(authority -> member.setRoles(Arrays.asList(authority.getRole()))).thenReturn(member))
+				.filter(member -> member.getPassword().equals(passwordEncoder.encode(authRequest.getUserPassword())));
+	}
+
+	public Mono<Boolean> isDuplicated(String userId) {
+		return memberRepository.findByUserId(userId).hasElement();
 	}
 }

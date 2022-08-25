@@ -15,13 +15,13 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-	private JWTUtil jwtUtil;
+	private final JWTUtil jwtUtil;
 
 	private final MemberService memberService;
 
 	public Mono<ResponseEntity<AuthResponse>> getToken(AuthRequest authRequest) {
 		return memberService.login(authRequest)
-				.map(memberDetails -> ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(memberDetails))))
+				.map(member -> ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(member))))
 				.switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
 	}
 

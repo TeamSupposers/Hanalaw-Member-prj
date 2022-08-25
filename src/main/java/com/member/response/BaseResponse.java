@@ -1,4 +1,4 @@
-package com.member.request;
+package com.member.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class  AuthRequest {
-    private String userId;
-    private String userPassword;
+public class BaseResponse {
+
+	private String error;
 }
