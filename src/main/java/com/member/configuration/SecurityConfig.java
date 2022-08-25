@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers("/login").permitAll()
                 .pathMatchers("/member/join").permitAll()
+                .pathMatchers("/member/isDup").permitAll()
                 .pathMatchers("/h2-console").permitAll()
                 .anyExchange().authenticated()
                 .and().build();
