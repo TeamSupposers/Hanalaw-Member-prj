@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.member.consts.Interst;
+import com.member.consts.Concern;
 import com.member.consts.Role;
 
 import lombok.AllArgsConstructor;
@@ -38,28 +38,33 @@ public class Member implements UserDetails {
     @Column("MBR_ID")
     private Long memberId;
     
+    @Setter
     @Column("USER_ID")
     private String userId;
     
+    @Setter
     @Column("USER_NAME")
     private String userName;
 
     @Column("USER_PASSWORD")
     private String userPassword;
 
+    @Setter
     @Column("PHONENUMBER")
     private String phoneNumber;
     
+    @Setter
     @Column("NICKNAME")
     private String nickName;
     
+    @Setter
     @Column("AGE_RANGE")
     private String ageRange;
     
     @Setter
     @Transient
     @JsonIgnore
-    private List<Interst> interests;
+    private List<Concern> interests;
     
     @Setter
     @Column("ENABLED")
@@ -80,10 +85,6 @@ public class Member implements UserDetails {
     @Override
     public String getUsername() {
         return userId;
-    }
-
-    public void setUsername(String userId) {
-        this.userId = userId;
     }
 
     @Override

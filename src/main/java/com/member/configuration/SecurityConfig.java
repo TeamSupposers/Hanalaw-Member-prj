@@ -39,9 +39,10 @@ public class SecurityConfig {
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                .pathMatchers("/login").permitAll()
-                .pathMatchers("/member/join").permitAll()
+                .pathMatchers("/authentication/login").permitAll()
+                .pathMatchers("/authentication/key").permitAll()
                 .pathMatchers("/member/isDup").permitAll()
+                .pathMatchers("/member").permitAll()
                 .pathMatchers("/h2-console").permitAll()
                 .anyExchange().authenticated()
                 .and().build();
