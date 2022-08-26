@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import com.member.consts.Concern;
+
 import lombok.Getter;
 import lombok.ToString;
 
@@ -20,10 +22,10 @@ public class Interest {
     private Long memberId;
 	
     @Column("INTEREST")
-    private Interest interest;
+    private Concern concern;
 
-    public Interest(Long memberId, Interest interest){
+    public Interest(Long memberId, Concern concern){
     	this.memberId = memberId;
-    	this.interest = interest;
+    	this.concern = concern;
     }
 }

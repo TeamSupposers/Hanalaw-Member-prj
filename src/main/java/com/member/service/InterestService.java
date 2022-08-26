@@ -1,23 +1,19 @@
 package com.member.service;
 
-import java.util.Arrays;
+import java.util.List;
 
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
-import com.member.consts.Role;
-import com.member.entity.Authority;
+import com.member.consts.Concern;
 import com.member.entity.Interest;
 import com.member.entity.Member;
-import com.member.repository.AuthorityRepository;
 import com.member.repository.InterestRepository;
 import com.member.repository.MemberRepository;
-import com.member.request.AuthRequest;
 import com.member.request.InterestRequest;
-import com.member.request.JoinRequest;
-import com.member.security.utils.PBKDF2Encoder;
+import com.member.request.UpdateRequest;
 
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -27,14 +23,28 @@ public class InterestService {
 	private final MemberRepository memberRepository;
 
 	private final InterestRepository interestRepository;
-	
-	public Mono<Member> regist(InterestRequest interestRequest) {
-		return memberRepository.findById(interestRequest.getMemberId()).flatMap(member -> {
-			for(com.member.consts.Interest interest : interestRequest.getList()) {
-				interestRepository.save(new Interest(member.getMemberId(),interest));
-			}
-			
-		})
-	}
 
+	public Mono<Boolean> regist(InterestRequest interestRequest) {
+		return memberRepository.findById(interestRequest.getMemberId())
+				.flatMap(m -> interestToFlux(m, interestRequest.getInterest()).then(Mono.just(true)))
+				.switchIfEmpty(Mono.just(false));
+	}
+	
+	public Mono<Boolean> updateInterest(Member member, UpdateRequest updateRequest) {
+		return deleteConcern(member)
+				.flatMap(isDeleted -> interestToFlux(member, updateRequest.getInterest()).then(Mono.just(isDeleted))).switchIfEmpty(Mono.just(false));
+	}
+	
+	public Mono<Boolean> deleteConcern(Member member) {
+		return interestRepository.deleteInterestByMemberId(member.getMemberId());
+	}
+	
+	public Flux<Interest> interestToFlux(Member member, List<Concern> list) {
+		return Flux.fromIterable(list)
+					.flatMap(concern -> insertInterest(member, concern));
+	}
+	
+	public Mono<Interest> insertInterest(Member member, Concern concern) {
+		return interestRepository.save(new Interest(member.getMemberId(), concern));
+	}
 }

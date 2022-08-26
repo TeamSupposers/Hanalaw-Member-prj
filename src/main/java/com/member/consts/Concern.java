@@ -1,5 +1,5 @@
 package com.member.consts;
 
-public enum Interest {
+public enum Concern {
 	TRAFFIC,HEALTH,LIVING,DISORDER,TRAVLE,BUSINESS,TECHNOLOGY,EDUCATION,MILLITARY,PROPERTY,TELECAST
 }

@@ -11,7 +11,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class  InterestRequest {
+public class  UpdateRequest {
 	private Long memberId;
+    private String userPassword;
+    private String phoneNumber;
+    private String nickName;
+    private String ageRange;
 	private List<Concern> interest;
 }
