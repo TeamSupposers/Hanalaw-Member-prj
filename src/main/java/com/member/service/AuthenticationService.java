@@ -1,5 +1,13 @@
 package com.member.service;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,7 +27,7 @@ public class AuthenticationService {
 
 	private final MemberService memberService;
 
-	public Mono<ResponseEntity<AuthResponse>> getToken(AuthRequest authRequest) {
+	public Mono<ResponseEntity<AuthResponse>> getToken(AuthRequest authRequest) throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		return memberService.login(authRequest)
 				.map(member -> ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(member))))
 				.switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));

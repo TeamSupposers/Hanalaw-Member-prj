@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers("/authentication/login").permitAll()
                 .pathMatchers("/authentication/key").permitAll()
+                .pathMatchers("/authentication/encrypt").permitAll()
                 .pathMatchers("/member/isDup").permitAll()
                 .pathMatchers("/member").permitAll()
                 .pathMatchers("/h2-console").permitAll()
