@@ -16,18 +16,23 @@ import com.member.response.DuplicatedResponse;
 import com.member.response.JoinResponse;
 import com.member.response.MemberResponse;
 import com.member.response.UpdateResponse;
+import com.member.security.RSAContext;
 import com.member.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/member")
 @RequiredArgsConstructor
+@Slf4j
 public class MemberController {
 
 	private final MemberService memberService;
 
+	private final RSAContext rsaContext;
+	
 	@PostMapping("/isDup")
 	public Mono<ResponseEntity<DuplicatedResponse>> isDuplicated(@RequestBody DuplicatedRequest duplicatedRequest) {
 		return memberService.isDuplicated(duplicatedRequest.getUserId())
@@ -37,7 +42,11 @@ public class MemberController {
 	@PostMapping
 	public Mono<ResponseEntity<JoinResponse>> join(@RequestBody JoinRequest joinRequest) {
 		return memberService.join(joinRequest)
-				.flatMap(member -> Mono.just(ResponseEntity.ok(new JoinResponse(member.getMemberId()))));
+				.flatMap(member -> {
+					rsaContext.getContext().remove(joinRequest.getUuid());
+					log.info("is rsaContext {} removed ? = {}", joinRequest.getUuid(), rsaContext.getContext().get(joinRequest.getUuid()) == null);
+					return Mono.just(ResponseEntity.ok(new JoinResponse(member.getMemberId())));
+				});
 	}
 
 	@GetMapping("{memberId}")

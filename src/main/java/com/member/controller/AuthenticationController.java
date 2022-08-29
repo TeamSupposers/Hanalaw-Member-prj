@@ -26,11 +26,13 @@ import com.member.security.utils.RSAUtils;
 import com.member.service.AuthenticationService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/authentication")
+@Slf4j
 public class AuthenticationController {
 
 	private final AuthenticationService authenticationService;
@@ -50,7 +52,7 @@ public class AuthenticationController {
 		KeyResponse keyResponse = new KeyResponse();
 		keyResponse.setPublicKey(base64PublicKey);
 		keyResponse.setUuid(uuid);
-		
+		log.info("is rsaContext {} exists ? = {} ", uuid, rsaContext.getContext().get(uuid) != null);
 		return Mono.just(keyResponse);
 	}
 	
@@ -61,7 +63,10 @@ public class AuthenticationController {
 	
 	@PostMapping("/login")
 	public Mono<ResponseEntity<AuthResponse>> login(@RequestBody AuthRequest authRequest) throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
-		return authenticationService.getToken(authRequest).doOnSuccess(a -> rsaContext.getContext().remove(authRequest.getUuid()));
+		return authenticationService.getToken(authRequest).doOnSuccess(a -> {
+			log.info("is rsaContext {} removed ? = {}", authRequest.getUuid(), rsaContext.getContext().get(authRequest.getUuid()) == null);
+			rsaContext.getContext().remove(authRequest.getUuid());
+		});
 	}
 
 }
