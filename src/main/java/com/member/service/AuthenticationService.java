@@ -8,11 +8,9 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.member.request.AuthRequest;
+import com.member.repository.MemberRepository;
 import com.member.response.AuthResponse;
 import com.member.security.utils.JWTUtil;
 
@@ -24,13 +22,19 @@ import reactor.core.publisher.Mono;
 public class AuthenticationService {
 
 	private final JWTUtil jwtUtil;
+	
+	private final MemberRepository memberRepository;
+	
+	public Mono<AuthResponse> refresh(String refreshToken) throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+		return memberRepository.findByRefreshToken(refreshToken).flatMap(member -> {
 
-	private final MemberService memberService;
-
-	public Mono<ResponseEntity<AuthResponse>> getToken(AuthRequest authRequest) throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
-		return memberService.login(authRequest)
-				.map(member -> ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(member))))
-				.switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
+			if(!jwtUtil.validateToken(member.getRefreshToken())) {
+				throw new IllegalStateException();
+			}
+			AuthResponse response = jwtUtil.generateTokenByRefresh(member);
+			member.setRefreshToken(response.getRefreshToken());
+			return memberRepository.save(member).doOnNext(save -> response.setRefreshToken(member.getRefreshToken())).thenReturn(response);
+		});
 	}
 
 }

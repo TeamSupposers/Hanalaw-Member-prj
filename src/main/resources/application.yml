@@ -4,7 +4,8 @@ server:
 springbootwebfluxjjwt:
   jjwt:
     secret: ThisIsSecretForJWTHS512SignatureAlgorithmThatMUSTHave64ByteLength
-    expiration: 28800
+    expiration: 1800000
+    re-expiration: 86400000
   password:
     encoder:
       iteration: 33

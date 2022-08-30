@@ -4,23 +4,30 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.member.consts.Role;
 import com.member.entity.Authority;
 import com.member.entity.Member;
+import com.member.entity.Specific;
 import com.member.repository.AuthorityRepository;
 import com.member.repository.MemberRepository;
+import com.member.repository.SpecificRepository;
 import com.member.request.AuthRequest;
 import com.member.request.JoinRequest;
 import com.member.request.UpdateRequest;
+import com.member.response.AuthResponse;
 import com.member.security.RSAContext;
+import com.member.security.utils.JWTUtil;
 import com.member.security.utils.PBKDF2Encoder;
 import com.member.security.utils.RSAUtils;
 
@@ -40,7 +47,9 @@ public class MemberService {
 	private final InterestService interestService;
 
 	private final RSAContext rsaContext;
-	
+
+	private final JWTUtil jwtUtil;
+
 	public Mono<Member> join(JoinRequest joinRequest) {
 		return isDuplicated(joinRequest.getUserId()).flatMap(isDup -> {
 			if (isDup) {
@@ -48,7 +57,8 @@ public class MemberService {
 			}
 			return memberRepository
 					.save(Member.builder().userId(joinRequest.getUserId()).userName(joinRequest.getUserName())
-							.userPassword(passwordEncoder.encode(RSAUtils.decrypt(joinRequest.getUserPassword(), rsaContext.getContext().get(joinRequest.getUuid()))))
+							.userPassword(passwordEncoder.encode(RSAUtils.decrypt(joinRequest.getUserPassword(),
+									rsaContext.getContext().get(joinRequest.getUuid()).getPrivateKey())))
 							.phoneNumber(joinRequest.getPhoneNumber()).nickName(joinRequest.getNickName())
 							.ageRange(joinRequest.getAgeRange()).enabled(true).build())
 					.flatMap(member -> authorityRepository.save(new Authority(member.getMemberId(), Role.ROLE_USER))
@@ -56,12 +66,21 @@ public class MemberService {
 		});
 	}
 
-	public Mono<Member> login(AuthRequest authRequest) throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException,
-	IllegalBlockSizeException, BadPaddingException {		
+	public Mono<ResponseEntity<AuthResponse>> login(AuthRequest authRequest)
+			throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException,
+			IllegalBlockSizeException, BadPaddingException {
 		return memberRepository.findByUserId(authRequest.getUserId())
 				.flatMap(member -> authorityRepository.findById(member.getMemberId())
 						.doOnNext(authority -> member.setRoles(Arrays.asList(authority.getRole()))).thenReturn(member))
-				.filter(member -> member.getPassword().equals(passwordEncoder.encode(RSAUtils.decrypt(authRequest.getUserPassword(), rsaContext.getContext().get(authRequest.getUuid())))));
+				.filter(member -> member.getPassword()
+						.equals(passwordEncoder.encode(RSAUtils.decrypt(authRequest.getUserPassword(),
+								rsaContext.getContext().get(authRequest.getUuid()).getPrivateKey()))))
+				.flatMap(member -> {
+					AuthResponse response = jwtUtil.generateToken(member);
+					member.setRefreshToken(response.getRefreshToken());
+					return memberRepository.save(member).doOnNext(save -> response.setRefreshToken(member.getRefreshToken())).thenReturn(response);
+				}).flatMap(response -> Mono.just(ResponseEntity.ok(response)))
+				.switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
 	}
 
 	public Mono<Boolean> isDuplicated(String userId) {
@@ -74,9 +93,8 @@ public class MemberService {
 	}
 
 	public Mono<Boolean> update(UpdateRequest updateRequest) {
-		return retrive(updateRequest.getMemberId())
-				.flatMap(findMember -> updateValidation(findMember, updateRequest)
-						.flatMap(updatedMember -> interestService.updateInterest(updatedMember, updateRequest)));
+		return retrive(updateRequest.getMemberId()).flatMap(findMember -> updateValidation(findMember, updateRequest)
+				.flatMap(updatedMember -> interestService.updateInterest(updatedMember, updateRequest)));
 	}
 
 	public Mono<Member> updateValidation(Member findMember, UpdateRequest updateRequest) {
@@ -86,5 +104,5 @@ public class MemberService {
 		findMember.setAgeRange(updateRequest.getAgeRange());
 		return memberRepository.save(findMember);
 	}
-
+	
 }

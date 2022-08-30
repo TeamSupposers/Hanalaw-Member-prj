@@ -1,5 +1,13 @@
 package com.member.controller;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.member.request.AuthRequest;
 import com.member.request.DuplicatedRequest;
 import com.member.request.JoinRequest;
 import com.member.request.UpdateRequest;
+import com.member.response.AuthResponse;
 import com.member.response.DuplicatedResponse;
 import com.member.response.JoinResponse;
 import com.member.response.MemberResponse;
@@ -57,5 +67,13 @@ public class MemberController {
 	@PutMapping
 	public Mono<ResponseEntity<UpdateResponse>> updateMember(@RequestBody UpdateRequest updateRequest) {
 		return memberService.update(updateRequest).flatMap(isUpdated -> Mono.just(ResponseEntity.ok(new UpdateResponse(isUpdated))));
+	}
+	
+	@PostMapping("/login")
+	public Mono<ResponseEntity<AuthResponse>> login(@RequestBody AuthRequest authRequest) throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+		return memberService.login(authRequest).doOnSuccess(a -> {
+			log.info("is rsaContext {} removed ? = {}", authRequest.getUuid(), rsaContext.getContext().get(authRequest.getUuid()) == null);
+			rsaContext.getContext().remove(authRequest.getUuid());
+		});
 	}
 }

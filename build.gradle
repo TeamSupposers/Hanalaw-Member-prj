@@ -28,6 +28,7 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
 	implementation 'io.r2dbc:r2dbc-h2'
 	implementation group: 'org.bouncycastle', name: 'bcprov-ext-jdk16', version: '1.46'
+	implementation 'com.google.guava:guava:30.1.1-jre'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'mysql:mysql-connector-java'
 	annotationProcessor 'org.projectlombok:lombok'

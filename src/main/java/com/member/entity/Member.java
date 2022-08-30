@@ -62,6 +62,10 @@ public class Member implements UserDetails {
     private String ageRange;
     
     @Setter
+    @Column("REFRESH_TOKEN")
+    private String refreshToken;
+    
+    @Setter
     @Transient
     @JsonIgnore
     private List<Concern> interests;

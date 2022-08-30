@@ -11,6 +11,6 @@ import lombok.Getter;
 @Getter
 public class RSAContext {
 
-	private Map<String, String> context = new ConcurrentHashMap<String, String>();
+	private Map<String, KeyProp> context = new ConcurrentHashMap<String, KeyProp>();
 
 }
