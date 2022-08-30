@@ -1,6 +1,7 @@
 package com.member.security.utils;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class JWTUtil {
         claims.put("role", member.getRoles());
         AuthResponse response = new AuthResponse();
         response.setAccessToken(doGenerateToken(claims, member.getUsername()));
-        response.setRefreshToken(doGenerateRefreshToken(member.getMemberId()));
+        response.setRefreshToken(doGenerateRefreshToken());
         return response;
     }
 
@@ -83,15 +84,13 @@ public class JWTUtil {
 	}
 
 	// jwt refresh 토큰 생성
-	public String doGenerateRefreshToken(Long memberId) {
-		Long expirationTimeLong = Long.parseLong(accessTokenExpirationTime); // in second
+	public String doGenerateRefreshToken() {
+		Long expirationTimeLong = Long.parseLong(refreshTokenExpirationTime); // in second
 		final Date createdDate = new Date();
 		final Date expirationDate = new Date(createdDate.getTime() + expirationTimeLong * 1000);
 
-		String refreshToken = Jwts.builder().setIssuedAt(createdDate).setExpiration(expirationDate).signWith(key)
+		return Jwts.builder().setIssuedAt(createdDate).setExpiration(expirationDate).signWith(key)
 				.compact();
-		
-		return refreshToken;
 	}
 
 	public Boolean validateToken(String token) {
