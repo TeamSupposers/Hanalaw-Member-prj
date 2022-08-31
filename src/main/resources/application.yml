@@ -1,5 +1,7 @@
 server:
-  port: 8082
+  servlet:
+    context-path: /hanaMbr
+  port: 8082
 
 springbootwebfluxjjwt:
   jjwt:
@@ -27,6 +29,7 @@ spring:
             client-id: ENC(rSK4nQrWzg35461UuWFRPO0WF/g45LPIu8Ls8cwNE+7i2PR7Kg3TV4Sn/TuUWoDRLpwUyJJqzfbXxVCdOAkQm+GJoJvNR/WKWanr2DfRKAzjdROpN6eeDQ==)
             client-secret: ENC(4sY1a5YjTVvJyJf7HSzNUEAn+dQlx1zomqOUcq+gRhgk/dGQz/Seys7pC60YwPHW)
             scope: profile, email
+     
 logging:
   level:
     org:
