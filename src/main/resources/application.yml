@@ -1,19 +1,25 @@
 server:
   port: 8082
+  servlet:
+    encoding:      charset: UTF-8
+      force: true
+      enabled: true
+    context-path: /hanaMbr
 
+---
 springbootwebfluxjjwt:
   jjwt:
     secret: ThisIsSecretForJWTHS512SignatureAlgorithmThatMUSTHave64ByteLength
-    expiration: 28800
+    expiration: 3600
+    re-expiration: 86400
   password:
     encoder:
-      secret: mysecret
       iteration: 33
       keylength: 256
-
+---
 webclient:
   h2-console-port: 8090
-  
+---  
 spring:
   profiles:
     active: local
@@ -27,6 +33,7 @@ spring:
             client-id: ENC(rSK4nQrWzg35461UuWFRPO0WF/g45LPIu8Ls8cwNE+7i2PR7Kg3TV4Sn/TuUWoDRLpwUyJJqzfbXxVCdOAkQm+GJoJvNR/WKWanr2DfRKAzjdROpN6eeDQ==)
             client-secret: ENC(4sY1a5YjTVvJyJf7HSzNUEAn+dQlx1zomqOUcq+gRhgk/dGQz/Seys7pC60YwPHW)
             scope: profile, email
+     
 logging:
   level:
     org:

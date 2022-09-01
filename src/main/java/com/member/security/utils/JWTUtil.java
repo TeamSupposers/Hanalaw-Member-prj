@@ -1,6 +1,7 @@
 package com.member.security.utils;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,66 +12,89 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.member.entity.Member;
+import com.member.response.AuthResponse;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class JWTUtil {
 
-    @Value("${springbootwebfluxjjwt.jjwt.secret}")
-    private String secret;
+	@Value("${springbootwebfluxjjwt.jjwt.secret}")
+	private String secret;
 
-    @Value("${springbootwebfluxjjwt.jjwt.expiration}")
-    private String expirationTime;
+	@Value("${springbootwebfluxjjwt.jjwt.expiration}")
+	private String accessTokenExpirationTime;
 
-    private Key key;
+	@Value("${springbootwebfluxjjwt.jjwt.re-expiration}")
+	private String refreshTokenExpirationTime;
 
-    @PostConstruct
-    public void init() {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes());
-    }
+	private Key key;
 
-    public Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-    }
+	@PostConstruct
+	public void init() {
+		this.key = Keys.hmacShaKeyFor(secret.getBytes());
+	}
 
-    public String getUsernameFromToken(String token) {
-        return getAllClaimsFromToken(token).getSubject();
-    }
+	public Claims getAllClaimsFromToken(String token) {
+		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+	}
 
-    public Date getExpirationDateFromToken(String token) {
-        return getAllClaimsFromToken(token).getExpiration();
-    }
+	public String getUsernameFromToken(String token) {
+		return getAllClaimsFromToken(token).getSubject();
+	}
 
-    private Boolean isTokenExpired(String token) {
-        final Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(new Date());
-    }
+	public Date getExpirationDateFromToken(String token) {
+		return getAllClaimsFromToken(token).getExpiration();
+	}
 
-    public String generateToken(Member member) {
+	private Boolean isTokenExpired(String token) {
+		final Date expiration = getExpirationDateFromToken(token);
+		return expiration.before(new Date());
+	}
+
+	public AuthResponse generateToken(Member member) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", member.getRoles());
-        return doGenerateToken(claims, member.getUsername());
+        AuthResponse response = new AuthResponse();
+        response.setAccessToken(doGenerateToken(claims, member.getUsername()));
+        response.setRefreshToken(doGenerateRefreshToken());
+        return response;
     }
 
-    private String doGenerateToken(Map<String, Object> claims, String username) {
-        Long expirationTimeLong = Long.parseLong(expirationTime); //in second
-        final Date createdDate = new Date();
-        final Date expirationDate = new Date(createdDate.getTime() + expirationTimeLong * 1000);
+	public AuthResponse generateTokenByRefresh(Member member) {
+		Map<String, Object> claims = new HashMap<>();
+		claims.put("role", member.getRoles());
+		AuthResponse response = new AuthResponse();
+		response.setAccessToken(doGenerateToken(claims, member.getUsername()));
+		response.setRefreshToken(member.getRefreshToken());
+		return response;
+	}
 
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(username)
-                .setIssuedAt(createdDate)
-                .setExpiration(expirationDate)
-                .signWith(key)
-                .compact();
-    }
+	private String doGenerateToken(Map<String, Object> claims, String username) {
+		Long expirationTimeLong = Long.parseLong(accessTokenExpirationTime); // in second
+		final Date createdDate = new Date();
+		final Date expirationDate = new Date(createdDate.getTime() + expirationTimeLong * 1000);
 
-    public Boolean validateToken(String token) {
-        return !isTokenExpired(token);
-    }
+		return Jwts.builder().setClaims(claims).setSubject(username).setIssuedAt(createdDate)
+				.setExpiration(expirationDate).signWith(key).compact();
+	}
+
+	// jwt refresh 토큰 생성
+	public String doGenerateRefreshToken() {
+		Long expirationTimeLong = Long.parseLong(refreshTokenExpirationTime); // in second
+		final Date createdDate = new Date();
+		final Date expirationDate = new Date(createdDate.getTime() + expirationTimeLong * 1000);
+
+		return Jwts.builder().setIssuedAt(createdDate).setExpiration(expirationDate).signWith(key)
+				.compact();
+	}
+
+	public Boolean validateToken(String token) {
+		return !isTokenExpired(token);
+	}
 
 }

@@ -1,6 +1,10 @@
 package com.member.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -23,7 +27,20 @@ public class InterestService {
 	private final MemberRepository memberRepository;
 
 	private final InterestRepository interestRepository;
-
+	
+	public Map<String, Concern> getList() {
+		Map<String, Concern> map = new HashMap<>();
+		for(Concern c : Concern.values()) {
+			map.put(c.getValue(), c);
+		}
+		return map;
+	}
+	
+	public Mono<List<Concern>> retriveInterest(Long memberId) {
+		return interestRepository.findByMemberId(memberId)
+				.flatMap(t -> Flux.just(t.getConcern())).collect(Collectors.toList());
+	}
+	
 	public Mono<Boolean> regist(InterestRequest interestRequest) {
 		return memberRepository.findById(interestRequest.getMemberId())
 				.flatMap(m -> interestToFlux(m, interestRequest.getInterest()).then(Mono.just(true)))

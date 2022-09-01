@@ -1,4 +1,4 @@
-package com.member.response;
+package com.member.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthResponse {
-	
+public class  RefreshRequest {
 	private String refreshToken;
-	
-    private String accessToken;
 }

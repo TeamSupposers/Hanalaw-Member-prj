@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Configuration
 public class JasyptConfig {
 
@@ -26,7 +29,7 @@ public class JasyptConfig {
 		config.setIvGeneratorClassName("org.jasypt.iv.NoIvGenerator");
 		config.setStringOutputType("base64");
 		encryptor.setConfig(config);
-		System.out.println(password);
+		log.info(password);
 		return encryptor;
 	}
 }

@@ -9,4 +9,6 @@ import reactor.core.publisher.Mono;
 public interface MemberRepository extends ReactiveSortingRepository <Member, Long> {
 
 	Mono<Member> findByUserId(String userId);
+	
+	Mono<Member> findByRefreshToken(String refreshToken);
 }

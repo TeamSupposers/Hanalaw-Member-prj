@@ -4,7 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -21,9 +23,11 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
+
 public class RSAUtils {
 
- 
 	// Key Section
 	/**
 	 * 공개키/개인키 KeyPair을 생성합니다.
@@ -34,7 +38,7 @@ public class RSAUtils {
 	 */
 	public static KeyPair createKeyPair(int keySize) throws NoSuchAlgorithmException {
 		KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
-		//keyPairGen.initialize(2048);
+		// keyPairGen.initialize(2048);
 		keyPairGen.initialize(keySize);
 		return keyPairGen.genKeyPair();
 	}// :
@@ -168,7 +172,7 @@ public class RSAUtils {
 	/**
 	 * 문자열을 암호화한 후 Base64로 encodging 하여 반환한다.
 	 * 
-	 * @param strToEncrypt     암호화할 문자열
+	 * @param strToEncrypt    암호화할 문자열
 	 * @param base64PublicKey Base64로 인코딩된 공개키 문자열
 	 * @return Base64로 변환된 암호화된 문자열
 	 * @throws NoSuchAlgorithmException
@@ -187,11 +191,11 @@ public class RSAUtils {
 	}// :
 
 	/**
-	 * Base64로 인코딩된 암호화된 문자열을 문자열로 변환한다. 
-	 * @param strToDecrypt Base64로 인코딩된 암호화된 문자열
-	 * @param base64PrivKey Base64로 인코딩된 암호화된 개인키 
-	 * @return
-	 * 		복호화된 문자열
+	 * Base64로 인코딩된 암호화된 문자열을 문자열로 변환한다.
+	 * 
+	 * @param strToDecrypt  Base64로 인코딩된 암호화된 문자열
+	 * @param base64PrivKey Base64로 인코딩된 암호화된 개인키
+	 * @return 복호화된 문자열
 	 * @throws InvalidKeySpecException
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidKeyException
@@ -199,12 +203,17 @@ public class RSAUtils {
 	 * @throws IllegalBlockSizeException
 	 * @throws BadPaddingException
 	 */
-	public static String decrypt(String strToDecrypt, String base64PrivKey)
-			throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException,
-			IllegalBlockSizeException, BadPaddingException {
-		PrivateKey privKey = base64ToPrivateKey(base64PrivKey); // Base64로 인코딩된 문자열을 개인키로 변환
-		byte[] encryptedByte = Base64.getDecoder().decode(strToDecrypt); // Base64 decoding
-		byte[] decryptedByte = decrypt(encryptedByte, privKey); // 복호화 
+	public static String decrypt(String strToDecrypt, String base64PrivKey) {
+		byte[] encryptedByte = null;
+		byte[] decryptedByte = null;
+		try {
+			PrivateKey privKey = base64ToPrivateKey(base64PrivKey); // Base64로 인코딩된 문자열을 개인키로 변환
+			encryptedByte = Base64.getDecoder().decode(strToDecrypt); // Base64 decoding
+			decryptedByte = decrypt(encryptedByte, privKey); // 복호화
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
 		return new String(decryptedByte);
 	}// :
 
@@ -271,5 +280,53 @@ public class RSAUtils {
 		baos.close();
 		return keyBytes;
 	}// :
- 
-}
+
+	/**
+	 * 공개키 또는 개인키를 PEM 파일형식으로 파일로 저장한다.
+	 * 
+	 * @param key         개인키 또는 공개키
+	 * @param description 키 구분자. "RSA PRIVATE KEY" 또는 "RSA PUBLIC KEY"
+	 * @param filename    저장할 파일명
+	 * @throws Exception
+	 */
+	public static void writePemFile(Key key, String description, String filename) {
+		PemObject pemObject = new PemObject(description, key.getEncoded());
+		PemWriter pemWriter = null;
+		try {
+			pemWriter = new PemWriter(new OutputStreamWriter(new FileOutputStream(filename)));
+			pemWriter.writeObject(pemObject);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				pemWriter.close();
+			} catch (Exception e) {
+			}
+		}
+	}// :
+
+	/**
+	 * 공개키 또는 개인키를 PEM 형식으로 변환하여 반환한다.
+	 * 
+	 * @param key         공개키 또는 개인키
+	 * @param description 키 구분자. "RSA PRIVATE KEY" 또는 "RSA PUBLIC KEY"
+	 * @return PEM 형식 문자열
+	 */
+	public static String writePemToString(Key key, String description) {
+		PemObject pemObject = new PemObject(description, key.getEncoded());
+		PemWriter pemWriter = null;
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		try {
+			pemWriter = new PemWriter(new OutputStreamWriter(bout));
+			pemWriter.writeObject(pemObject);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				pemWriter.close();
+			} catch (Exception e) {
+			}
+		}
+		return bout.toString();
+	}// :
+}/// ~

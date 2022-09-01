@@ -1,5 +1,8 @@
 package com.member.response;
 
+import java.util.List;
+
+import com.member.consts.Concern;
 import com.member.entity.Member;
 
 import lombok.Data;
@@ -13,6 +16,7 @@ public class  MemberResponse {
     private String phoneNumber;
     private String nickName;
     private String ageRange;
+    private List<Concern> interest;
     
     public MemberResponse(Member member) {
     	this.userId = member.getUserId();
@@ -20,5 +24,6 @@ public class  MemberResponse {
     	this.phoneNumber = member.getPhoneNumber();
     	this.nickName = member.getNickName();
     	this.ageRange = member.getAgeRange();
+    	this.interest = member.getInterests();
     }
 }
