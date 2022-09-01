@@ -1,8 +1,12 @@
 server:
+  port: 8082
   servlet:
+    encoding:      charset: UTF-8
+      force: true
+      enabled: true
     context-path: /hanaMbr
-  port: 8082
 
+---
 springbootwebfluxjjwt:
   jjwt:
     secret: ThisIsSecretForJWTHS512SignatureAlgorithmThatMUSTHave64ByteLength
@@ -12,10 +16,10 @@ springbootwebfluxjjwt:
     encoder:
       iteration: 33
       keylength: 256
-
+---
 webclient:
   h2-console-port: 8090
-  
+---  
 spring:
   profiles:
     active: local
