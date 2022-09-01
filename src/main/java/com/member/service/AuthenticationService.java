@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.member.consts.Role;
 import com.member.entity.Authority;
+import com.member.exception.TokenValidationException;
 import com.member.repository.AuthorityRepository;
 import com.member.repository.MemberRepository;
 import com.member.response.AuthResponse;
@@ -33,10 +34,10 @@ public class AuthenticationService {
 	private final AuthorityRepository authorityRepository;
 
 	public Mono<AuthResponse> refresh(String refreshToken) throws InvalidKeyException, InvalidKeySpecException,
-			NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+			NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, TokenValidationException {
 		return memberRepository.findByRefreshToken(refreshToken).flatMap(member -> {
 			if (!jwtUtil.validateToken(member.getRefreshToken())) {
-				throw new IllegalStateException();
+				throw new TokenValidationException();
 			}
 			return getAuthorityList(member.getMemberId()).flatMap(list -> {
 				List<Role> roles = new ArrayList<>();

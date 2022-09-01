@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class  UpdateRequest {
+	private String uuid;
 	private Long memberId;
     private String userPassword;
     private String phoneNumber;

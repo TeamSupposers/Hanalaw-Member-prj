@@ -4,7 +4,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
-import java.util.NoSuchElementException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -18,10 +17,9 @@ import org.springframework.stereotype.Service;
 import com.member.consts.Role;
 import com.member.entity.Authority;
 import com.member.entity.Member;
-import com.member.entity.Specific;
+import com.member.exception.KeyValidationException;
 import com.member.repository.AuthorityRepository;
 import com.member.repository.MemberRepository;
-import com.member.repository.SpecificRepository;
 import com.member.request.AuthRequest;
 import com.member.request.JoinRequest;
 import com.member.request.UpdateRequest;
@@ -54,6 +52,8 @@ public class MemberService {
 		return isDuplicated(joinRequest.getUserId()).flatMap(isDup -> {
 			if (isDup) {
 				throw new DuplicateKeyException("중복된 키 입니다.");
+			} else if (rsaContext.getContext().get(joinRequest.getUuid()) == null) {
+				throw new KeyValidationException("유효하지 않은 키");
 			}
 			return memberRepository
 					.save(Member.builder().userId(joinRequest.getUserId()).userName(joinRequest.getUserName())
@@ -68,17 +68,22 @@ public class MemberService {
 
 	public Mono<ResponseEntity<AuthResponse>> login(AuthRequest authRequest)
 			throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException,
-			IllegalBlockSizeException, BadPaddingException {
+			IllegalBlockSizeException, BadPaddingException, KeyValidationException {
 		return memberRepository.findByUserId(authRequest.getUserId())
 				.flatMap(member -> authorityRepository.findById(member.getMemberId())
 						.doOnNext(authority -> member.setRoles(Arrays.asList(authority.getRole()))).thenReturn(member))
-				.filter(member -> member.getPassword()
-						.equals(passwordEncoder.encode(RSAUtils.decrypt(authRequest.getUserPassword(),
-								rsaContext.getContext().get(authRequest.getUuid()).getPrivateKey()))))
-				.flatMap(member -> {
+				.filter(member -> {
+					if(rsaContext.getContext().get(authRequest.getUuid()) == null) {
+						throw new KeyValidationException("유효하지 않은 키");
+					}
+					return member.getPassword()
+							.equals(passwordEncoder.encode(RSAUtils.decrypt(authRequest.getUserPassword(),
+									rsaContext.getContext().get(authRequest.getUuid()).getPrivateKey())));
+				}).flatMap(member -> {
 					AuthResponse response = jwtUtil.generateToken(member);
 					member.setRefreshToken(response.getRefreshToken());
-					return memberRepository.save(member).doOnNext(save -> response.setRefreshToken(member.getRefreshToken())).thenReturn(response);
+					return memberRepository.save(member)
+							.doOnNext(save -> response.setRefreshToken(member.getRefreshToken())).thenReturn(response);
 				}).flatMap(response -> Mono.just(ResponseEntity.ok(response)))
 				.switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
 	}
@@ -88,7 +93,9 @@ public class MemberService {
 	}
 
 	public Mono<Member> retrive(Long memberId) {
-		return memberRepository.findById(memberId);
+		return memberRepository.findById(memberId)
+				.flatMap(member -> interestService.retriveInterest(member.getMemberId())
+						.doOnSuccess(list -> member.setInterests(list)).thenReturn(member));
 
 	}
 
@@ -98,11 +105,15 @@ public class MemberService {
 	}
 
 	public Mono<Member> updateValidation(Member findMember, UpdateRequest updateRequest) {
-		findMember.setPassword(passwordEncoder.encode(updateRequest.getUserPassword()));
+		if(rsaContext.getContext().get(updateRequest.getUuid()) == null) {
+			throw new KeyValidationException("유효하지 않은 키");
+		}
+		findMember.setPassword(passwordEncoder.encode(RSAUtils.decrypt(updateRequest.getUserPassword(),
+				rsaContext.getContext().get(updateRequest.getUuid()).getPrivateKey())));
 		findMember.setPhoneNumber(updateRequest.getPhoneNumber());
 		findMember.setNickName(updateRequest.getNickName());
 		findMember.setAgeRange(updateRequest.getAgeRange());
 		return memberRepository.save(findMember);
 	}
-	
+
 }

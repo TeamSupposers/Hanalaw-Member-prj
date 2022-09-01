@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.member.exception.KeyValidationException;
 import com.member.request.AuthRequest;
 import com.member.request.DuplicatedRequest;
 import com.member.request.JoinRequest;
@@ -70,7 +71,7 @@ public class MemberController {
 	}
 	
 	@PostMapping("/login")
-	public Mono<ResponseEntity<AuthResponse>> login(@RequestBody AuthRequest authRequest) throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	public Mono<ResponseEntity<AuthResponse>> login(@RequestBody AuthRequest authRequest) throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, KeyValidationException {
 		return memberService.login(authRequest).doOnSuccess(a -> {
 			log.info("is rsaContext {} removed ? = {}", authRequest.getUuid(), rsaContext.getContext().get(authRequest.getUuid()) == null);
 			rsaContext.getContext().remove(authRequest.getUuid());
