@@ -45,8 +45,8 @@ public class AuthenticationController {
 	public Mono<KeyResponse> getKey() throws NoSuchAlgorithmException {
 
 		KeyPair keyPair = RSAUtils.createKeyPair(1024);
-		String base64PrivateKey = RSAUtils.privateKeyToBase64(keyPair); // 개인키를 base64로
-		String base64PublicKey = RSAUtils.publicKeyToBase64(keyPair); // 공개키를 base64로
+		String base64PrivateKey = RSAUtils.privateKeyToBase64(keyPair);
+		String base64PublicKey = RSAUtils.publicKeyToBase64(keyPair);
 
 		KeyProp prop = new KeyProp();
 		prop.setPrivateKey(base64PrivateKey);

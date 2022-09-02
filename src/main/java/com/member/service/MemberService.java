@@ -51,9 +51,9 @@ public class MemberService {
 	public Mono<Member> join(JoinRequest joinRequest) {
 		return isDuplicated(joinRequest.getUserId()).flatMap(isDup -> {
 			if (isDup) {
-				throw new DuplicateKeyException("Áßº¹µÈ Å° ÀÔ´Ï´Ù.");
+				throw new DuplicateKeyException("ì¤‘ë³µëœ ì•„ì´ë””ìž…ë‹ˆë‹¤.");
 			} else if (rsaContext.getContext().get(joinRequest.getUuid()) == null) {
-				throw new KeyValidationException("À¯È¿ÇÏÁö ¾ÊÀº Å°");
+				throw new KeyValidationException("ìœ íš¨í•œ uuidê°€ ì•„ë‹™ë‹ˆë‹¤.");
 			}
 			return memberRepository
 					.save(Member.builder().userId(joinRequest.getUserId()).userName(joinRequest.getUserName())
@@ -74,7 +74,7 @@ public class MemberService {
 						.doOnNext(authority -> member.setRoles(Arrays.asList(authority.getRole()))).thenReturn(member))
 				.filter(member -> {
 					if(rsaContext.getContext().get(authRequest.getUuid()) == null) {
-						throw new KeyValidationException("À¯È¿ÇÏÁö ¾ÊÀº Å°");
+						throw new KeyValidationException("ìœ íš¨í•œ uuidê°€ ì•„ë‹™ë‹ˆë‹¤.");
 					}
 					return member.getPassword()
 							.equals(passwordEncoder.encode(RSAUtils.decrypt(authRequest.getUserPassword(),
@@ -106,7 +106,7 @@ public class MemberService {
 
 	public Mono<Member> updateValidation(Member findMember, UpdateRequest updateRequest) {
 		if(rsaContext.getContext().get(updateRequest.getUuid()) == null) {
-			throw new KeyValidationException("À¯È¿ÇÏÁö ¾ÊÀº Å°");
+			throw new KeyValidationException("ìœ íš¨í•œ uuidê°€ ì•„ë‹™ë‹ˆë‹¤.");
 		}
 		findMember.setPassword(passwordEncoder.encode(RSAUtils.decrypt(updateRequest.getUserPassword(),
 				rsaContext.getContext().get(updateRequest.getUuid()).getPrivateKey())));

@@ -19,7 +19,7 @@ public class ExceptionHandlers {
     @ExceptionHandler(TokenValidationException.class)
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
     public ErrorResponse tokenValidationExceptionHandler(Exception ex) {
-    	ErrorResponse response = new ErrorResponse(HttpStatus.NOT_ACCEPTABLE.value(), "À¯È¿ÇÏÁö ¾ÊÀº ÅäÅ«");
+    	ErrorResponse response = new ErrorResponse(HttpStatus.NOT_ACCEPTABLE.value(), "ìœ íš¨í•œ í† í°ê°’ì´ ì•„ë‹™ë‹ˆë‹¤.");
         return response;
     }
     
